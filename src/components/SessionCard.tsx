@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/lib/toast";
 import { AuthService } from '@/services/AuthService';
 import { SessionService, GymSession } from '@/services/SessionService';
 import { Calendar, MapPin, Star, MessageCircle, Users } from 'lucide-react';

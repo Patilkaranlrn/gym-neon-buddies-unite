@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/lib/toast";
 import { AuthService } from '@/services/AuthService';
 import { SessionService } from '@/services/SessionService';
 import Navbar from '@/components/Navbar';
@@ -62,6 +61,7 @@ const CreateSession = () => {
         location,
         datetime,
         details,
+        creator: currentUser
       }, currentUser);
       
       toast("Session created!", {
