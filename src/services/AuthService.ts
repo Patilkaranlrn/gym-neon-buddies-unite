@@ -17,13 +17,13 @@ export class AuthService {
     if (!session?.user) return null;
     
     // Get profile data
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', session.user.id)
       .single();
       
-    if (!profile) return null;
+    if (error || !profile) return null;
     
     return {
       id: session.user.id,
@@ -90,10 +90,7 @@ export class AuthService {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password,
-        options: {
-          redirectTo: 'https://gym-neon-buddies-unite.lovable.app/'
-        }
+        password
       });
       
       if (error) {
@@ -107,17 +104,19 @@ export class AuthService {
       if (!data.user) return null;
       
       // Get profile data
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', data.user.id)
         .single();
         
+      if (profileError || !profile) return null;
+      
       const user = {
         id: data.user.id,
         email: data.user.email || '',
-        name: profile?.name || '',
-        profilePic: profile?.profile_pic
+        name: profile.name,
+        profilePic: profile.profile_pic
       };
       
       // Update cached user
@@ -152,13 +151,13 @@ export class AuthService {
       if (event === 'SIGNED_IN') {
         // Use setTimeout to prevent blocking the auth state change callback
         setTimeout(async () => {
-          const { data: profile } = await supabase
+          const { data: profile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
             
-          if (profile) {
+          if (!error && profile) {
             const user = {
               id: session.user.id,
               email: session.user.email || '',
