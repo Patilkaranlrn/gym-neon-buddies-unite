@@ -64,7 +64,8 @@ export class AuthService {
         options: {
           data: {
             name: user.name
-          }
+          },
+          emailRedirectTo: 'https://gym-neon-buddies-unite.lovable.app/'
         }
       });
       
@@ -89,7 +90,10 @@ export class AuthService {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
+        options: {
+          redirectTo: 'https://gym-neon-buddies-unite.lovable.app/'
+        }
       });
       
       if (error) {

@@ -13,6 +13,9 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    storage: localStorage
+    storage: localStorage,
+    flowType: 'pkce',
+    // Set the redirect URL to the production URL for authentication
+    redirectTo: 'https://gym-neon-buddies-unite.lovable.app/'
   }
 });
