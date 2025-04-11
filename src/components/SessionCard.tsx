@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
-import { AuthService } from '@/services/AuthService';
+import { AuthService, User } from '@/services/AuthService';
 import { SessionService, GymSession } from '@/services/SessionService';
 import { Calendar, MapPin, Star, MessageCircle, Users } from 'lucide-react';
 import { format, isPast } from 'date-fns';
@@ -17,13 +17,25 @@ interface SessionCardProps {
 
 const SessionCard = ({ session, onUpdate }: SessionCardProps) => {
   const [status, setStatus] = useState<'creator' | 'accepted' | 'requested' | 'none'>('none');
-  const [currentUser, setCurrentUser] = useState(AuthService.getCurrentUser());
+  const [currentUser, setCurrentUser] = useState<User | null>(AuthService.getCurrentUserSync());
   const [averageRating, setAverageRating] = useState(0);
   const [canRate, setCanRate] = useState(false);
   const [userRating, setUserRating] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Load user asynchronously if not already loaded
+    const loadUser = async () => {
+      if (!currentUser) {
+        const user = await AuthService.getCurrentUser();
+        setCurrentUser(user);
+      }
+    };
+    
+    loadUser();
+  }, [currentUser]);
   
   useEffect(() => {
     if (currentUser) {
@@ -38,7 +50,7 @@ const SessionCard = ({ session, onUpdate }: SessionCardProps) => {
     setAverageRating(SessionService.getAverageRating(session));
   }, [session, currentUser]);
   
-  const handleRequestJoin = () => {
+  const handleRequestJoin = async () => {
     if (!currentUser) {
       toast("Please login to join sessions", {
         description: "You need to be logged in to join a gym session",

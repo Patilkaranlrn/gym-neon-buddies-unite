@@ -6,7 +6,7 @@ import { AuthService, User } from "@/services/AuthService";
 import { Dumbbell, LogOut, User as UserIcon, Home, Plus } from 'lucide-react';
 
 const Navbar = () => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(AuthService.getCurrentUserSync());
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   

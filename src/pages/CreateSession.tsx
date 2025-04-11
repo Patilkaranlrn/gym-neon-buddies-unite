@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
-import { AuthService } from '@/services/AuthService';
+import { AuthService, User } from '@/services/AuthService';
 import { SessionService } from '@/services/SessionService';
 import Navbar from '@/components/Navbar';
 import { format } from 'date-fns';
@@ -19,13 +20,32 @@ const CreateSession = () => {
   const [datetime, setDatetime] = useState('');
   const [details, setDetails] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(AuthService.getCurrentUserSync());
   
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (!currentUser) {
+      // Try to load user asynchronously
+      const loadUser = async () => {
+        const user = await AuthService.getCurrentUser();
+        if (user) {
+          setCurrentUser(user);
+        } else {
+          toast("Not logged in", {
+            description: "You need to be logged in to create a session",
+          });
+          navigate('/login');
+        }
+      };
+      
+      loadUser();
+    }
+  }, [navigate, currentUser]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const currentUser = AuthService.getCurrentUser();
     if (!currentUser) {
       toast("Not logged in", {
         description: "You need to be logged in to create a session",
@@ -60,8 +80,7 @@ const CreateSession = () => {
         workoutType,
         location,
         datetime,
-        details,
-        creator: currentUser
+        details
       }, currentUser);
       
       toast("Session created!", {

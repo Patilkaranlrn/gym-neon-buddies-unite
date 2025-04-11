@@ -33,6 +33,28 @@ export class AuthService {
     };
   }
   
+  // Get current user synchronously - returns cached value
+  static getCurrentUserSync(): User | null {
+    // Check if we have a user in localStorage
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) return null;
+    
+    try {
+      return JSON.parse(userStr);
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  // Update cached user
+  static updateCachedUser(user: User | null): void {
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('currentUser');
+    }
+  }
+  
   // Sign up with email and password
   static async registerUser(user: { name: string, email: string, password: string }): Promise<boolean> {
     try {
@@ -87,12 +109,17 @@ export class AuthService {
         .eq('id', data.user.id)
         .single();
         
-      return {
+      const user = {
         id: data.user.id,
         email: data.user.email || '',
         name: profile?.name || '',
         profilePic: profile?.profile_pic
       };
+      
+      // Update cached user
+      this.updateCachedUser(user);
+      
+      return user;
     } catch (err) {
       console.error("Login exception:", err);
       return null;
@@ -101,6 +128,7 @@ export class AuthService {
   
   // Sign out
   static async logout(): Promise<void> {
+    this.updateCachedUser(null);
     await supabase.auth.signOut();
   }
   
@@ -111,6 +139,7 @@ export class AuthService {
       if (event !== 'SIGNED_IN' && event !== 'SIGNED_OUT') return;
       
       if (!session?.user) {
+        this.updateCachedUser(null);
         callback(null);
         return;
       }
@@ -126,12 +155,16 @@ export class AuthService {
             .single();
             
           if (profile) {
-            callback({
+            const user = {
               id: session.user.id,
               email: session.user.email || '',
               name: profile.name,
               profilePic: profile.profile_pic
-            });
+            };
+            
+            // Update cached user
+            this.updateCachedUser(user);
+            callback(user);
           }
         }, 0);
       }

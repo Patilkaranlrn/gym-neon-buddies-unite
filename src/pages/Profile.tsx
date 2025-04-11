@@ -4,14 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AuthService } from '@/services/AuthService';
+import { AuthService, User } from '@/services/AuthService';
 import { SessionService, GymSession } from '@/services/SessionService';
 import SessionCard from '@/components/SessionCard';
 import Navbar from '@/components/Navbar';
-import { User, LogOut, Dumbbell } from 'lucide-react';
+import { User as UserIcon, LogOut, Dumbbell } from 'lucide-react';
 
 const Profile = () => {
-  const [currentUser, setCurrentUser] = useState(AuthService.getCurrentUser());
+  const [currentUser, setCurrentUser] = useState<User | null>(AuthService.getCurrentUserSync());
   const [mySessions, setMySessions] = useState<GymSession[]>([]);
   const [joinedSessions, setJoinedSessions] = useState<GymSession[]>([]);
   const [requestedSessions, setRequestedSessions] = useState<GymSession[]>([]);
@@ -20,7 +20,17 @@ const Profile = () => {
   
   useEffect(() => {
     if (!currentUser) {
-      navigate('/login');
+      // Try to load user asynchronously
+      const loadUser = async () => {
+        const user = await AuthService.getCurrentUser();
+        if (user) {
+          setCurrentUser(user);
+        } else {
+          navigate('/login');
+        }
+      };
+      
+      loadUser();
       return;
     }
     
