@@ -1,4 +1,3 @@
-
 import { User } from './AuthService';
 
 export interface GymSession {
@@ -49,11 +48,6 @@ export class SessionService {
       ...session,
       id: crypto.randomUUID(),
       createdAt: Date.now(),
-      creator: {
-        id: user.id,
-        name: user.name,
-        profilePic: user.profilePic
-      },
       requests: [],
       accepted: [],
       ratings: []

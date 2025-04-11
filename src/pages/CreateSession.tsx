@@ -73,14 +73,19 @@ const CreateSession = () => {
     
     setIsLoading(true);
     
-    // Create session
+    // Create session with the correct parameter structure
     try {
-      SessionService.createSession({
+      const newSession = SessionService.createSession({
         title,
         workoutType,
         location,
         datetime,
-        details
+        details,
+        creator: {
+          id: currentUser.id,
+          name: currentUser.name,
+          profilePic: currentUser.profilePic
+        }
       }, currentUser);
       
       toast("Session created!", {

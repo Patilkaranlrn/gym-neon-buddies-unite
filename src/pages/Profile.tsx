@@ -169,7 +169,7 @@ const Profile = () => {
                 </div>
               ) : (
                 <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                  <User className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                  <UserIcon className="mx-auto h-12 w-12 text-gray-300 mb-4" />
                   <h3 className="text-xl font-medium text-gray-700 mb-2">No joined sessions</h3>
                   <p className="text-gray-500 mb-6">You haven't joined any workout sessions yet</p>
                   <Button 
@@ -195,7 +195,7 @@ const Profile = () => {
                 </div>
               ) : (
                 <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                  <User className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                  <UserIcon className="mx-auto h-12 w-12 text-gray-300 mb-4" />
                   <h3 className="text-xl font-medium text-gray-700 mb-2">No pending requests</h3>
                   <p className="text-gray-500 mb-6">You don't have any pending session requests</p>
                   <Button 
