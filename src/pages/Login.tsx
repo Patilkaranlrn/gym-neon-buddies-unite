@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +16,20 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkAuth = async () => {
+      const user = await AuthService.getCurrentUser();
+      if (user) {
+        navigate('/');
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
@@ -30,22 +42,23 @@ const Login = () => {
       return;
     }
     
-    setTimeout(() => {
-      const user = AuthService.login(email, password);
+    try {
+      const user = await AuthService.login(email, password);
       
       if (user) {
         toast("Welcome back!", {
           description: `You're logged in as ${user.name}`,
         });
         navigate('/');
-      } else {
-        toast("Login failed", {
-          description: "Incorrect email or password",
-        });
       }
-      
+    } catch (error) {
+      console.error("Login error:", error);
+      toast("Login failed", {
+        description: "An unexpected error occurred. Please try again.",
+      });
+    } finally {
       setIsLoading(false);
-    }, 800); // Simulate network delay
+    }
   };
   
   return (

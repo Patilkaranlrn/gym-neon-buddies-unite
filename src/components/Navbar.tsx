@@ -2,33 +2,46 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { AuthService } from "@/services/AuthService";
-import { Dumbbell, LogOut, User, Home, Plus } from 'lucide-react';
+import { AuthService, User } from "@/services/AuthService";
+import { Dumbbell, LogOut, User as UserIcon, Home, Plus } from 'lucide-react';
 
 const Navbar = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   
   useEffect(() => {
-    const checkAuth = () => {
-      const user = AuthService.getCurrentUser();
-      setIsLoggedIn(!!user);
+    // Check authentication status on mount
+    const checkAuth = async () => {
+      try {
+        const user = await AuthService.getCurrentUser();
+        setCurrentUser(user);
+      } catch (error) {
+        console.error("Auth check error:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     
     checkAuth();
     
-    // Listen for storage events (logout from another tab)
-    window.addEventListener('storage', checkAuth);
+    // Set up auth state change listener
+    const { data: { subscription } } = AuthService.onAuthStateChange((user) => {
+      setCurrentUser(user);
+    });
     
     return () => {
-      window.removeEventListener('storage', checkAuth);
+      subscription.unsubscribe();
     };
   }, []);
   
-  const handleLogout = () => {
-    AuthService.logout();
-    setIsLoggedIn(false);
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await AuthService.logout();
+      navigate('/login');
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
   
   return (
@@ -41,7 +54,7 @@ const Navbar = () => {
           </Link>
           
           <div className="flex items-center space-x-4">
-            {isLoggedIn ? (
+            {!isLoading && currentUser ? (
               <>
                 <Link to="/">
                   <Button variant="ghost" className="flex items-center gap-2">
@@ -57,7 +70,7 @@ const Navbar = () => {
                 </Link>
                 <Link to="/profile">
                   <Button variant="ghost" className="flex items-center gap-2">
-                    <User className="h-5 w-5" />
+                    <UserIcon className="h-5 w-5" />
                     <span className="hidden sm:inline">Profile</span>
                   </Button>
                 </Link>

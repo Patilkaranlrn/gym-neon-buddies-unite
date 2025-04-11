@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,8 +18,20 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkAuth = async () => {
+      const user = await AuthService.getCurrentUser();
+      if (user) {
+        navigate('/');
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
@@ -40,28 +52,35 @@ const Signup = () => {
       return;
     }
     
-    setTimeout(() => {
-      const success = AuthService.registerUser({
-        id: "",
+    try {
+      const success = await AuthService.registerUser({
         name,
         email,
         password,
       });
       
       if (success) {
-        AuthService.login(email, password);
         toast("Account created!", {
-          description: "Your account has been created successfully",
+          description: "Your account has been created successfully. You can now login.",
         });
-        navigate('/');
-      } else {
-        toast("Registration failed", {
-          description: "Email already in use",
-        });
+        
+        // Sign in automatically after registration
+        const user = await AuthService.login(email, password);
+        
+        if (user) {
+          navigate('/');
+        } else {
+          navigate('/login');
+        }
       }
-      
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast("Registration failed", {
+        description: "An unexpected error occurred. Please try again.",
+      });
+    } finally {
       setIsLoading(false);
-    }, 800); // Simulate network delay
+    }
   };
   
   return (
