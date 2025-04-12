@@ -151,23 +151,27 @@ export class AuthService {
       if (event === 'SIGNED_IN') {
         // Use setTimeout to prevent blocking the auth state change callback
         setTimeout(async () => {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (!error && profile) {
-            const user = {
-              id: session.user.id,
-              email: session.user.email || '',
-              name: profile.name,
-              profilePic: profile.profile_pic
-            };
-            
-            // Update cached user
-            this.updateCachedUser(user);
-            callback(user);
+          try {
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+              
+            if (!error && profile) {
+              const user = {
+                id: session.user.id,
+                email: session.user.email || '',
+                name: profile.name,
+                profilePic: profile.profile_pic
+              };
+              
+              // Update cached user
+              this.updateCachedUser(user);
+              callback(user);
+            }
+          } catch (err) {
+            console.error("Profile fetch error:", err);
           }
         }, 0);
       }
