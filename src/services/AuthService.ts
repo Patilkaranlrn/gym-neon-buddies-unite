@@ -18,19 +18,19 @@ export class AuthService {
     
     // Get profile data
     try {
-      const { data: profile, error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
         .single();
         
-      if (error || !profile) return null;
+      if (error || !data) return null;
       
       return {
         id: session.user.id,
         email: session.user.email || '',
-        name: profile.name,
-        profilePic: profile.profile_pic
+        name: data.name,
+        profilePic: data.profile_pic
       };
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -162,18 +162,18 @@ export class AuthService {
         // Use setTimeout to prevent blocking the auth state change callback
         setTimeout(async () => {
           try {
-            const { data: profile, error } = await supabase
+            const { data, error } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
               .single();
               
-            if (!error && profile) {
+            if (!error && data) {
               const user = {
                 id: session.user.id,
                 email: session.user.email || '',
-                name: profile.name,
-                profilePic: profile.profile_pic
+                name: data.name,
+                profilePic: data.profile_pic
               };
               
               // Update cached user
