@@ -24,7 +24,10 @@ export class AuthService {
         .eq('id', session.user.id)
         .single();
         
-      if (error || !data) return null;
+      if (error || !data) {
+        console.error("Profile fetch error:", error);
+        return null;
+      }
       
       return {
         id: session.user.id,
@@ -70,7 +73,7 @@ export class AuthService {
           data: {
             name: user.name
           },
-          emailRedirectTo: 'https://gym-neon-buddies-unite.lovable.app/'
+          emailRedirectTo: window.location.origin
         }
       });
       
@@ -116,7 +119,10 @@ export class AuthService {
           .eq('id', data.user.id)
           .single();
           
-        if (profileError || !profile) return null;
+        if (profileError || !profile) {
+          console.error("Profile fetch error:", profileError);
+          return null;
+        }
         
         const user = {
           id: data.user.id,
@@ -162,24 +168,27 @@ export class AuthService {
         // Use setTimeout to prevent blocking the auth state change callback
         setTimeout(async () => {
           try {
-            const { data, error } = await supabase
+            const { data: profile, error: profileError } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
               .single();
               
-            if (!error && data) {
-              const user = {
-                id: session.user.id,
-                email: session.user.email || '',
-                name: data.name,
-                profilePic: data.profile_pic
-              };
-              
-              // Update cached user
-              this.updateCachedUser(user);
-              callback(user);
+            if (profileError || !profile) {
+              console.error("Profile fetch error:", profileError);
+              return;
             }
+            
+            const user = {
+              id: session.user.id,
+              email: session.user.email || '',
+              name: profile.name,
+              profilePic: profile.profile_pic
+            };
+            
+            // Update cached user
+            this.updateCachedUser(user);
+            callback(user);
           } catch (err) {
             console.error("Profile fetch error:", err);
           }
