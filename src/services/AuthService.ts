@@ -17,20 +17,25 @@ export class AuthService {
     if (!session?.user) return null;
     
     // Get profile data
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', session.user.id)
-      .single();
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+        
+      if (error || !profile) return null;
       
-    if (error || !profile) return null;
-    
-    return {
-      id: session.user.id,
-      email: session.user.email || '',
-      name: profile.name,
-      profilePic: profile.profile_pic
-    };
+      return {
+        id: session.user.id,
+        email: session.user.email || '',
+        name: profile.name,
+        profilePic: profile.profile_pic
+      };
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      return null;
+    }
   }
   
   // Get current user synchronously - returns cached value
@@ -104,25 +109,30 @@ export class AuthService {
       if (!data.user) return null;
       
       // Get profile data
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (profileError || !profile) return null;
         
-      if (profileError || !profile) return null;
-      
-      const user = {
-        id: data.user.id,
-        email: data.user.email || '',
-        name: profile.name,
-        profilePic: profile.profile_pic
-      };
-      
-      // Update cached user
-      this.updateCachedUser(user);
-      
-      return user;
+        const user = {
+          id: data.user.id,
+          email: data.user.email || '',
+          name: profile.name,
+          profilePic: profile.profile_pic
+        };
+        
+        // Update cached user
+        this.updateCachedUser(user);
+        
+        return user;
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        return null;
+      }
     } catch (err) {
       console.error("Login exception:", err);
       return null;
